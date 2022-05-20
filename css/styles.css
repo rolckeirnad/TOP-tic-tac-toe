@@ -2,3 +2,39 @@
     margin: 0;
     padding: 0;
 }
+
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+main {
+    margin: 10px 0;
+    width: 540px;
+    height: 540px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.board {
+    display: grid;
+    min-width: 550px;
+    min-height: 550px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+    background-color: white;
+    align-self: center;
+}
+
+.cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 5px solid black;
+    font-size: 80px;
+    font-weight: bolder;
+    cursor: pointer;
+}
