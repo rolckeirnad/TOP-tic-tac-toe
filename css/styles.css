@@ -38,3 +38,36 @@ main {
     font-weight: bolder;
     cursor: pointer;
 }
+
+.message {
+    display: none;
+    position: absolute;
+    height: 100vh;
+    width: 100vw;
+    background-color: rgba(255, 255, 255, 0.6);
+}
+
+.message.show {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+}
+
+.result-message {
+    font-size: xx-large;
+    font-weight: bolder;
+}
+
+#restartButton {
+    border: none;
+    border-radius: 10px;
+    background-color: greenyellow;
+    color: black;
+    font-weight: bold;
+    width: fit-content;
+    height: fit-content;
+    padding: 10px 15px;
+    cursor: pointer;
+}
