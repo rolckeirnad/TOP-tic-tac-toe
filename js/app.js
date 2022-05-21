@@ -24,8 +24,25 @@ const gameBoard = (function () {
             gameController.endTurn(index, turn); // Finish player turn
         }
     }
+
+    function removeMarks() {
+        for (let cell of cells) {
+            cell.textContent = '';
+        }
+    }
+
+    function returnBoard() {
+        return [...board];
+    }
+
+    function reset() {
+        board = new Array(9);
+        removeMarks();
+    }
+
     return {
-        board,
+        returnBoard,
+        reset,
     };
 })();
 
@@ -37,17 +54,23 @@ const gameController = (function () {
         const getMark = () => mark;
         const addCell = (index) => cells.push(index);
         const getCells = () => cells;
+        const reset = () => cells = [];
         return {
             getName,
             getMark,
             addCell,
             getCells,
+            reset,
         }
     };
 
     // Cached DOM elements
     const messageContainer = document.querySelector('.message');
     const message = document.querySelector('#messageText');
+    const resetButton = document.querySelector('#restartButton');
+
+    // Add event to reset button
+    resetButton.addEventListener('click', resetGame);
 
     // Internal state for controller
     const turn = (function () {
@@ -86,7 +109,8 @@ const gameController = (function () {
     // We check if player has all indexes of a winning combination
     const checkWinner = function (player) {
         const playerCells = [...players[player].getCells()];
-        let fullBoard = !(gameBoard.board.includes(undefined));
+        const actualBoard = gameBoard.returnBoard();
+        let fullBoard = !(actualBoard.includes(undefined));
 
         const winner = POSSIBLE_WINNING_COMBINATIONS.some(combination =>
             combination.every(index => playerCells.includes(index))
@@ -103,6 +127,13 @@ const gameController = (function () {
         messageContainer.classList.add('show');
         message.textContent = result;
     };
+
+    function resetGame() {
+        for (let player of players) player.reset();
+        turn.setTurn(0);
+        messageContainer.classList.remove('show');
+        gameBoard.reset();
+    }
 
     const players = [Player('Player 1', 'X'), Player('Player 2', 'O')];
     return {
