@@ -1,6 +1,7 @@
 * {
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
 }
 
 body {
@@ -11,7 +12,7 @@ body {
 
 main {
     margin: 10px 0;
-    width: 540px;
+    width: 100vw;
     height: 540px;
     display: flex;
     justify-content: center;
@@ -39,12 +40,74 @@ main {
     cursor: pointer;
 }
 
-.message {
-    display: none;
+.player-info-container {
+    height: 100%;
+    padding: 50px 0 0;
+    flex: 1;
+    gap: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: start;
+}
+
+.player-name, .player-mark {
+    font-size: 60px;
+    font-weight: bold;
+}
+
+.player-rounds {
+    font-size: x-large;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.message, .initial {
     position: absolute;
     height: 100vh;
     width: 100vw;
+}
+
+.message {
+    display: none;
     background-color: rgba(255, 255, 255, 0.6);
+}
+
+.initial {
+    height: 100vh;
+    width: 100vw;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.initial.hide {
+    display: none;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    gap: 20px;
+    font-size: 30px;
+}
+
+.title {
+    font-size: 40px;
+    font-weight: bold;
+}
+
+.form .match-buttons button {
+    background-color: cornflowerblue;
+}
+
+.form .match-buttons button:disabled {
+    background-color: rgb(158, 169, 189);
 }
 
 .message.show {
@@ -60,11 +123,12 @@ main {
     font-weight: bolder;
 }
 
-#restartButton {
+#restartButton, #playButton, .match-buttons button {
     border: none;
     border-radius: 10px;
     background-color: greenyellow;
     color: black;
+    font-size: 30px;
     font-weight: bold;
     width: fit-content;
     height: fit-content;
