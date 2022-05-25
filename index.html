@@ -12,22 +12,32 @@
     </header>    
     <div class="initial" id="initialSetup">
       <form class="form">
-        <div class="title">Select game mode:</div>
-        <div class="match-buttons">
-          <button type="button">P vs P</button>
-          <button type="button" disabled>P vs C</button>
-        </div>
-        <div class="title">Input your name:</div>
-        <div class="name-inputs">
-          <label for="player1">
-            Player 1 name: 
-            <input type="text" id="p1InputName" name="player1">
-          </label> 
-          <label for="player1">
-            Player 2 name: 
-            <input type="text" id="p2InputName" name="player2">
-          </label>        
-        </div>
+        <fieldset id="gameMode">
+          <legend class="title">Select game mode:</legend>
+          <ul>
+            <li>
+              <label for="pvp">P vs. P</label>
+              <input type="radio" id="pvp" name="mode" value="player" checked>
+            </li>
+            <li>
+              <label for="pvc">P vs. C</label>
+              <input type="radio" id="pvc" name="mode" value="computer">
+            </li>
+          </ul>
+        </fieldset>
+        <fieldset>
+          <legend class="title">Input your name:</legend>
+          <div class="name-inputs">
+            <label for="player1">
+              Player 1 name: 
+              <input type="text" id="p1InputName" name="player1">
+            </label> 
+            <label for="player1">
+              Player 2 name: 
+              <input type="text" id="p2InputName" name="player2">
+            </label>        
+          </div>
+        </fieldset>
         <button type="button" id="playButton">Play!</button>        
       </form>
     </div>

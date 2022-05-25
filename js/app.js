@@ -16,13 +16,17 @@ const gameBoard = (function () {
     // Function to mark selected cell
     function addMarker(index) {
         const isCellEmpty = !board[index];
-        if (isCellEmpty) {
-            const currentPlayer = gameController.state.getPlayerInTurn();
+        const currentPlayer = gameController.state.getPlayerInTurn();
+        if (isCellEmpty && currentPlayer.isPlayerEnabled()) {
             const mark = currentPlayer.getMark(); // Get mark for current player
             board[index] = mark; // Save mark in array position
             cells[index].textContent = mark; // Show mark in pressed cell
             gameController.endTurn(index); // Finish player turn
         }
+    }
+
+    function simulateBoardClick(index) {
+        cells[index].click();
     }
 
     function removeMarks() {
@@ -43,6 +47,7 @@ const gameBoard = (function () {
     return {
         returnBoard,
         reset,
+        simulateBoardClick,
     };
 })();
 
@@ -51,6 +56,8 @@ const gameController = (function () {
     function Player(name, mark) {
         let cells = [];
         let winCount = 0;
+        let enabled = true;
+
         const getName = () => name;
         const getMark = () => mark;
         const addCell = (index) => cells.push(index);
@@ -58,6 +65,9 @@ const gameController = (function () {
         const resetCells = () => cells = [];
         const getVictories = () => winCount;
         const addVictory = () => winCount = winCount + 1;
+        const isPlayerTurn = () => enabled;
+        const togglePlayerState = () => enabled = enabled ? false : true;
+
         return {
             getName,
             getMark,
@@ -66,6 +76,8 @@ const gameController = (function () {
             reset: resetCells,
             getVictories,
             addVictory,
+            isPlayerEnabled: isPlayerTurn,
+            togglePlayerState,
         }
     }
 
@@ -90,13 +102,18 @@ const gameController = (function () {
     const state = (function () {
         let actualTurn = 0;
         let players = [];
+        let versusIA = false;
+
         const setActualTurn = (value) => actualTurn = value;
         const getActualTurn = () => actualTurn;
         const toggleActualTurn = () => actualTurn = (actualTurn === 0) ? 1 : 0;
         const setPlayers = (newPlayers) => players = [...newPlayers];
         const getPlayers = () => players;
         const getPlayerInTurn = () => players[actualTurn];
+        const togglePlayerStatus = (index) => players[index].togglePlayerState();
         const resetPlayerCells = () => players.map(player => player.reset());
+        const setIAStatus = (value) => versusIA = value;
+        const isIAEnabled = () => versusIA;
 
         return {
             setActualTurn,
@@ -105,7 +122,10 @@ const gameController = (function () {
             setPlayers,
             getPlayers,
             getPlayerInTurn,
+            togglePlayerStatus,
             resetPlayerCells,
+            setIAStatus,
+            isIAEnabled,
         }
 
     })();
@@ -128,6 +148,21 @@ const gameController = (function () {
         checkWinner();// Check played markers
     };
 
+    function computerTurn() {
+        const possibleMoves = gameBoard.returnBoard().map((v, i) => v === undefined ? i : '').filter(Number);
+        const indexToPlay = Math.floor(Math.random() * possibleMoves.length);
+        gameBoard.simulateBoardClick(possibleMoves[indexToPlay]);
+    }
+
+    const startNextTurn = function () {
+        const versusIA = state.isIAEnabled();
+        const turnToPlay = state.toggleTurn();
+        if (turnToPlay === 1 && versusIA) {
+            // Play Computer turn
+            computerTurn();
+        } 
+    };
+
     // We check if player has all indexes of a winning combination
     const checkWinner = function () {
         const playerCells = [...state.getPlayerInTurn().getCells()];
@@ -144,7 +179,7 @@ const gameController = (function () {
         } else if (fullBoard) {
             displayResult('It\'s a tie!!!');
         } else {
-            state.toggleTurn();
+            startNextTurn();
         }
     };
 
@@ -157,18 +192,23 @@ const gameController = (function () {
     // Set a new game and updates displayed stats
     function resetGame() {
         state.resetPlayerCells();
+        state.toggleTurn();
         //state.setActualTurn(0);
         messageContainer.classList.remove('show');
         displayStats();
         gameBoard.reset();
+        startNextTurn();
     }
 
     // Initialization of state
     function startGame() {
+        const gameMode = document.querySelector('#gameMode>ul>li input:checked');
+        const versusIA = gameMode.value === 'player' ? false : true;// Read if the second player is computer; if so, change default name
         const player1 = player1Name.value ? player1Name.value : 'Player 1';
-        const player2 = player2Name.value ? player2Name.value : 'Player 2';
+        const player2 = player2Name.value ? player2Name.value : versusIA ? 'Computer' : 'Player 2';
         const tempPlayers = [Player(player1, 'X'), Player(player2, 'O')];
         state.setPlayers(tempPlayers);
+        if (versusIA) state.setIAStatus(true);
         initialSetup.classList.add('hide');
         displayNames();
         displayStats();
