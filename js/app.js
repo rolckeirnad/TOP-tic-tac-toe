@@ -119,6 +119,7 @@ const gameController = (function () {
         let players = [];
         let versusIA = false;
         let difficult = 'easy';
+        let maxDepth = 10;
 
         const setActualTurn = (value) => actualTurn = value;
         const getActualTurn = () => actualTurn;
@@ -130,8 +131,15 @@ const gameController = (function () {
         const resetPlayerCells = () => players.map(player => player.reset());
         const setIAStatus = (value) => versusIA = value;
         const isIAEnabled = () => versusIA;
-        const setIADifficult = (value) => difficult = value;
+        const getMaxDepth = () => maxDepth;
         const getIADifficult = () => difficult;
+        const setIADifficult = (value) => {
+            difficult = value;
+            if (difficult == 'easy') maxDepth = 1;
+            if (difficult == 'medium') maxDepth = 2;
+            if (difficult == 'hard') maxDepth = 3;
+            if (difficult == 'unbeatable') maxDepth = 8;
+        };
 
         return {
             setActualTurn,
@@ -144,8 +152,9 @@ const gameController = (function () {
             resetPlayerCells,
             setIAStatus,
             isIAEnabled,
-            setIADifficult,
+            getMaxDepth,
             getIADifficult,
+            setIADifficult,
         }
 
     })();
@@ -169,8 +178,8 @@ const gameController = (function () {
     };
 
     function computerTurn() {
-        const difficult = state.getIADifficult();
-        if (difficult == 'easy') {
+        //const difficult = state.getIADifficult();
+        /* if (difficult == 'easy') {
             const possibleMoves = gameBoard.getPossibleMoves();
             const indexToPlay = Math.floor(Math.random() * possibleMoves.length);
             gameBoard.simulateBoardClick(possibleMoves[indexToPlay]);
@@ -180,7 +189,12 @@ const gameController = (function () {
             const actualTurn = gameController.state.getActualTurn();
             const indexToPlay = minimax(actualBoard, actualPlayers, actualTurn, 0);
             gameBoard.simulateBoardClick(indexToPlay.index);
-        }
+        } */
+        const actualBoard = gameBoard.returnBoard();
+        const actualPlayers = gameController.state.getPlayers();
+        const actualTurn = gameController.state.getActualTurn();
+        const indexToPlay = minimax(actualBoard, actualPlayers, actualTurn, 0);
+        gameBoard.simulateBoardClick(indexToPlay.index);
     }
 
     function minimax(board, players, turn, depth) {
@@ -217,6 +231,8 @@ const gameController = (function () {
             return { score: 10 - depth };
         } else if (emptyCell.length == 0) {
             return { score: 0 }
+        } else if (depth == state.getMaxDepth()) {
+            return { score: 0 }
         }
 
         let moves = [];
@@ -233,7 +249,6 @@ const gameController = (function () {
         }
 
         let bestMove;
-        //console.log({ moves, board, emptyCell });
         if (turn == 1) {
             let bestScore = -10000;
             for (let i = 0; i < moves.length; i++) {
@@ -266,7 +281,6 @@ const gameController = (function () {
     // We check if player has all indexes of a winning combination
     const checkWinner = function (player) {
         const playerCells = player.getCells();
-        //const actualBoard = gameBoard.returnBoard();
         let fullBoard = gameBoard.isBoardFull();
 
         const winner = POSSIBLE_WINNING_COMBINATIONS.some(combination =>
