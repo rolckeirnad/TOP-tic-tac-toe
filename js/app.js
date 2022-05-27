@@ -39,15 +39,25 @@ const gameBoard = (function () {
         return [...board];
     }
 
+    function getPossibleMoves() {
+        return [...board].map((v, i) => v === undefined ? i : '').filter(Number);
+    }
+
+    function isBoardFull() {
+        return !(board.includes(undefined));
+    }
+
     function reset() {
         board = new Array(9);
         removeMarks();
     }
 
     return {
-        returnBoard,
-        reset,
         simulateBoardClick,
+        returnBoard,
+        getPossibleMoves,
+        isBoardFull,
+        reset,
     };
 })();
 
@@ -61,7 +71,9 @@ const gameController = (function () {
         const getName = () => name;
         const getMark = () => mark;
         const addCell = (index) => cells.push(index);
-        const getCells = () => cells;
+        const removeCell = (value) => cells.splice(cells.indexOf(value), 1);
+        const getCells = () => [...cells];
+        const setCells = (newCells) => cells = [...newCells];
         const resetCells = () => cells = [];
         const getVictories = () => winCount;
         const addVictory = () => winCount = winCount + 1;
@@ -72,7 +84,9 @@ const gameController = (function () {
             getName,
             getMark,
             addCell,
+            removeCell,
             getCells,
+            setCells,
             reset: resetCells,
             getVictories,
             addVictory,
@@ -93,6 +107,7 @@ const gameController = (function () {
     const displayP2Name = document.querySelector('#p2Name');
     const p1Wins = document.querySelector('#p1Wins');
     const p2Wins = document.querySelector('#p2Wins');
+    const gameDifficult = document.querySelector('#setDifficult');
 
     // Add event to reset button
     resetButton.addEventListener('click', resetGame);
@@ -103,17 +118,20 @@ const gameController = (function () {
         let actualTurn = 0;
         let players = [];
         let versusIA = false;
+        let difficult = 'easy';
 
         const setActualTurn = (value) => actualTurn = value;
         const getActualTurn = () => actualTurn;
         const toggleActualTurn = () => actualTurn = (actualTurn === 0) ? 1 : 0;
         const setPlayers = (newPlayers) => players = [...newPlayers];
-        const getPlayers = () => players;
+        const getPlayers = () => [...players];
         const getPlayerInTurn = () => players[actualTurn];
         const togglePlayerStatus = (index) => players[index].togglePlayerState();
         const resetPlayerCells = () => players.map(player => player.reset());
         const setIAStatus = (value) => versusIA = value;
         const isIAEnabled = () => versusIA;
+        const setIADifficult = (value) => difficult = value;
+        const getIADifficult = () => difficult;
 
         return {
             setActualTurn,
@@ -126,6 +144,8 @@ const gameController = (function () {
             resetPlayerCells,
             setIAStatus,
             isIAEnabled,
+            setIADifficult,
+            getIADifficult,
         }
 
     })();
@@ -145,13 +165,93 @@ const gameController = (function () {
     // Finalizes turn and check if there's winner or not
     const endTurn = function (playedIndex) {
         state.getPlayerInTurn().addCell(playedIndex);// Save index cell in player cells list
-        checkWinner();// Check played markers
+        checkWinner(state.getPlayerInTurn());// Check played markers
     };
 
     function computerTurn() {
-        const possibleMoves = gameBoard.returnBoard().map((v, i) => v === undefined ? i : '').filter(Number);
-        const indexToPlay = Math.floor(Math.random() * possibleMoves.length);
-        gameBoard.simulateBoardClick(possibleMoves[indexToPlay]);
+        const difficult = state.getIADifficult();
+        if (difficult == 'easy') {
+            const possibleMoves = gameBoard.getPossibleMoves();
+            const indexToPlay = Math.floor(Math.random() * possibleMoves.length);
+            gameBoard.simulateBoardClick(possibleMoves[indexToPlay]);
+        } else if (difficult == 'unbeatable') {
+            const actualBoard = gameBoard.returnBoard();
+            const actualPlayers = gameController.state.getPlayers();
+            const actualTurn = gameController.state.getActualTurn();
+            const indexToPlay = minimax(actualBoard, actualPlayers, actualTurn, 0);
+            gameBoard.simulateBoardClick(indexToPlay.index);
+        }
+    }
+
+    function minimax(board, players, turn, depth) {
+        // This check if some player has a winning combination
+        function checkPlayerCells(players) {
+            let index;
+            for (let i = 0; i < 2; i++) {
+                const cells = players[i].getCells();
+                const winner = POSSIBLE_WINNING_COMBINATIONS.some(combination =>
+                    combination.every(index => cells.includes(index))
+                );
+                if (winner) {
+                    index = i;
+                    break;
+                }
+            }
+            return index;
+        }
+        // We get all empty cells from passed board
+        function getEmptyCells(actualBoard) {
+            return [...actualBoard].map((v, i) => v === undefined ? i : '')
+                .filter(v => v !== '');
+        }
+
+        const nextTurn = turn ? 0 : 1;
+        const nextDepth = depth + 1;
+        const emptyCell = getEmptyCells(board);
+
+        const winner = checkPlayerCells(players);
+        // Player is number 0, Computer is number 1
+        if (winner === 0) {
+            return { score: depth - 10 };
+        } else if (winner === 1) {
+            return { score: 10 - depth };
+        } else if (emptyCell.length == 0) {
+            return { score: 0 }
+        }
+
+        let moves = [];
+        for (let i = 0; i < emptyCell.length; i++) {
+            let move = {};
+            move.index = emptyCell[i];
+            board[emptyCell[i]] = players[turn].getMark();
+            players[turn].addCell(emptyCell[i]);
+            const nextMove = minimax(board, players, nextTurn, nextDepth);
+            move.score = nextMove.score;
+            players[turn].removeCell(emptyCell[i]);
+            board[emptyCell[i]] = undefined;
+            moves.push(move);
+        }
+
+        let bestMove;
+        //console.log({ moves, board, emptyCell });
+        if (turn == 1) {
+            let bestScore = -10000;
+            for (let i = 0; i < moves.length; i++) {
+                if (moves[i].score > bestScore) {
+                    bestScore = moves[i].score;
+                    bestMove = i;
+                }
+            }
+        } else {
+            let bestScore = 10000;
+            for (let i = 0; i < moves.length; i++) {
+                if (moves[i].score < bestScore) {
+                    bestScore = moves[i].score;
+                    bestMove = i;
+                }
+            }
+        }
+        return moves[bestMove];
     }
 
     const startNextTurn = function () {
@@ -160,14 +260,14 @@ const gameController = (function () {
         if (turnToPlay === 1 && versusIA) {
             // Play Computer turn
             computerTurn();
-        } 
+        }
     };
 
     // We check if player has all indexes of a winning combination
-    const checkWinner = function () {
-        const playerCells = [...state.getPlayerInTurn().getCells()];
-        const actualBoard = gameBoard.returnBoard();
-        let fullBoard = !(actualBoard.includes(undefined));
+    const checkWinner = function (player) {
+        const playerCells = player.getCells();
+        //const actualBoard = gameBoard.returnBoard();
+        let fullBoard = gameBoard.isBoardFull();
 
         const winner = POSSIBLE_WINNING_COMBINATIONS.some(combination =>
             combination.every(index => playerCells.includes(index))
@@ -208,7 +308,10 @@ const gameController = (function () {
         const player2 = player2Name.value ? player2Name.value : versusIA ? 'Computer' : 'Player 2';
         const tempPlayers = [Player(player1, 'X'), Player(player2, 'O')];
         state.setPlayers(tempPlayers);
-        if (versusIA) state.setIAStatus(true);
+        if (versusIA) {
+            state.setIAStatus(true);
+            state.setIADifficult(gameDifficult.value);
+        }
         initialSetup.classList.add('hide');
         displayNames();
         displayStats();
