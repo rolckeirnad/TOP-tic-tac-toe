@@ -2,12 +2,19 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    background-color: #ff7062;
 }
 
 main {
@@ -26,32 +33,61 @@ main {
     min-height: 550px;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-template-rows: repeat(3, minmax(0, 1fr));
-    background-color: white;
+    background-color: inherit;
     align-self: center;
+    background-color: #1f271b;
 }
 
 .cell {
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 5px solid black;
+    border: 5px solid #483d3f;
     font-size: 80px;
     font-weight: bolder;
     cursor: pointer;
 }
 
+.cell.X {
+    color: #ffd23f;
+}
+
+.cell.O {
+    color: #c779d0;
+}
+
+.cell.X.highlight {
+    border: none;
+    box-shadow: inset 0px 0px 20px 10px #ffd23f, 0px 0px 20px 0px #ffd23f;
+}
+
+.cell.O.highlight {
+    border: none;
+    box-shadow: inset 0px 0px 20px 10px #c779d0, 0px 0px 20px 0px #c779d0;
+}
+
 .player-info-container {
-    height: 100%;
-    padding: 50px 0 0;
+    align-self: start;
+    padding: 5px 0 15px;
     flex: 1;
     gap: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: start;
+    background: #8cc0de;
+    border-radius: 20px;
+    margin: 10px 20px;
 }
 
-.player-name, .player-mark {
+.player-name {
+    border-bottom: 3px solid;
+    width: 100%;
+    text-align: center;
+}
+
+.player-name,
+.player-mark {
     font-size: 60px;
     font-weight: bold;
 }
@@ -63,7 +99,8 @@ main {
     align-items: center;
 }
 
-.message, .initial {
+.message,
+.initial {
     position: absolute;
     height: 100vh;
     width: 100vw;
@@ -71,13 +108,13 @@ main {
 
 .message {
     display: none;
-    background-color: rgba(255, 255, 255, 0.6);
+    background-color: rgba(255, 255, 255, 0.4);
 }
 
 .initial {
     height: 100vh;
     width: 100vw;
-    background-color: white;
+    background-color: inherit;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -95,19 +132,101 @@ main {
     justify-content: space-around;
     gap: 20px;
     font-size: 30px;
+    width: 600px;
+    background: #8cc0de;
+    width: 50vw;
+    padding: 20px 30px;
+    border-radius: 20px;
+    box-shadow: 5px 5px 15px 10px #fd3e2b;
+    position: relative;
+}
+
+.form-field {
+    width: 100%;
+    height: 100px;
+    border: 2px inset #8cc0de;
+    padding: 0px 0px;
+    transition: ease 0.2s;
+}
+
+.form-field.hide {
+    transform: scaleY(0);
+    height: 0;
+}
+
+.form-field ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+}
+
+input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+input[type="radio"]+label {
+    background-color: #faf0d7;
+    color: blue;
+    /* color: #d97df5; */
+    border-radius: 5px;
+    padding: 5px 10px;
+    width: fit-content;
+    height: fit-content;
+    cursor: pointer;
+    transition: ease background-color 0.3s;
+}
+
+input[type="radio"]:checked+label {
+    background-color: #12355b;
+    color: white;
+    font-weight: bold;
+    border: 2px solid;
+}
+
+.name-inputs {
+    position: relative;
+    display: flex;
+    justify-content: space-around;
+}
+
+input[type="text"] {
+    border: none;
+    outline: none;
+    padding: 15px 10px 0;
+    font-size: 1.4rem;
+    height: 3rem;
+    width: 22ch;
+    border-radius: 10px;
+}
+
+input[type="text"]::placeholder {
+    opacity: 0;
+}
+
+label[for$="InputName"] {
+    position: relative;
+}
+
+label[for$="InputName"] span {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: translateY(10px) translateX(10px);
+    font-size: 0.825em;
+    transition-duration: 300ms;
+}
+
+label[for$="InputName"]:focus-within>span,
+input[type="text"]:not(:placeholder-shown)+span {
+    color: purple;
+    transform: translateY(-1px) translateX(10px);
+    font-size: 16px;
 }
 
 .title {
     font-size: 40px;
     font-weight: bold;
-}
-
-.form .match-buttons button {
-    background-color: cornflowerblue;
-}
-
-.form .match-buttons button:disabled {
-    background-color: rgb(158, 169, 189);
 }
 
 .message.show {
@@ -123,11 +242,12 @@ main {
     font-weight: bolder;
 }
 
-#restartButton, #playButton, .match-buttons button {
+#restartButton,
+#playButton {
     border: none;
     border-radius: 10px;
-    background-color: greenyellow;
-    color: black;
+    background-color: #12355b;
+    color: #faf0d7;
     font-size: 30px;
     font-weight: bold;
     width: fit-content;

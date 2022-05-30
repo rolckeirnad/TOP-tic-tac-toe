@@ -21,7 +21,17 @@ const gameBoard = (function () {
             const mark = currentPlayer.getMark(); // Get mark for current player
             board[index] = mark; // Save mark in array position
             cells[index].textContent = mark; // Show mark in pressed cell
+            cells[index].classList.add(mark);
+            cells[index].classList.add('highlight');
             gameController.endTurn(index); // Finish player turn
+        }
+    }
+
+    function highlightCells(cellsArr) {
+        const cellArray = cellsArr[0];
+        removeHighlight();
+        for (let cell of cellArray) {
+            cells[cell].classList.add('highlight');
         }
     }
 
@@ -29,9 +39,18 @@ const gameBoard = (function () {
         cells[index].click();
     }
 
-    function removeMarks() {
+    function removeHighlight() {
+        for (let cell of cells) {
+            cell.classList.remove('highlight');
+        }
+    }
+
+    function resetCells() {
         for (let cell of cells) {
             cell.textContent = '';
+            cell.classList.remove('X');
+            cell.classList.remove('O');
+            cell.classList.remove('highlight')
         }
     }
 
@@ -49,10 +68,11 @@ const gameBoard = (function () {
 
     function reset() {
         board = new Array(9);
-        removeMarks();
+        resetCells();
     }
 
     return {
+        highlightCells,
         simulateBoardClick,
         returnBoard,
         getPossibleMoves,
@@ -107,8 +127,15 @@ const gameController = (function () {
     const displayP2Name = document.querySelector('#p2Name');
     const p1Wins = document.querySelector('#p1Wins');
     const p2Wins = document.querySelector('#p2Wins');
-    const gameDifficult = document.querySelector('#setDifficult');
+    const p1Mark = document.querySelector('#p1Mark');
+    const p2Mark = document.querySelector('#p2Mark');
+    const gameMode = document.querySelector('#gameMode');
+    const gameSelection = gameMode.querySelectorAll('li input[type="radio"]');
+    const AIDifficult = document.querySelector('#AIDifficult');
+    const difficultOptions = AIDifficult.querySelectorAll('li input[type="radio"]');
 
+    for (let radio of gameSelection) radio.addEventListener('click', displayDifficultSelection);
+    for (let radio of difficultOptions) radio.addEventListener('click', saveDifficult);
     // Add event to reset button
     resetButton.addEventListener('click', resetGame);
     playButton.addEventListener('click', startGame);
@@ -119,7 +146,7 @@ const gameController = (function () {
         let players = [];
         let versusIA = false;
         let difficult = 'easy';
-        let maxDepth = 10;
+        let maxDepth = 1;
 
         const setActualTurn = (value) => actualTurn = value;
         const getActualTurn = () => actualTurn;
@@ -135,10 +162,10 @@ const gameController = (function () {
         const getIADifficult = () => difficult;
         const setIADifficult = (value) => {
             difficult = value;
-            if (difficult == 'easy') maxDepth = 1;
-            if (difficult == 'medium') maxDepth = 2;
-            if (difficult == 'hard') maxDepth = 3;
-            if (difficult == 'unbeatable') maxDepth = 8;
+            if (value == 'easy') maxDepth = 1;
+            if (value == 'medium') maxDepth = 2;
+            if (value == 'hard') maxDepth = 3;
+            if (value == 'unbeatable') maxDepth = 8;
         };
 
         return {
@@ -177,24 +204,39 @@ const gameController = (function () {
         checkWinner(state.getPlayerInTurn());// Check played markers
     };
 
+    function displayDifficultSelection() {
+        const gameDifficult = document.querySelector('ul>li input:checked');
+        const p2Label = document.querySelector('#p2Label');
+        // Change default name from "Player 2" to "Computer"
+        if (gameDifficult.value == 'player') {
+            state.setIAStatus(false);
+            AIDifficult.classList.add('hide');
+            p2Label.textContent = 'Player 2';
+        } else {
+            state.setIAStatus(true);
+            AIDifficult.classList.remove('hide');
+            p2Label.textContent = 'Computer';
+        }
+    }
+
+    function saveDifficult() {
+        const difficult = AIDifficult.querySelector('ul>li input:checked');
+        state.setIADifficult(difficult.value);
+    }
+
     function computerTurn() {
-        //const difficult = state.getIADifficult();
-        /* if (difficult == 'easy') {
-            const possibleMoves = gameBoard.getPossibleMoves();
-            const indexToPlay = Math.floor(Math.random() * possibleMoves.length);
-            gameBoard.simulateBoardClick(possibleMoves[indexToPlay]);
-        } else if (difficult == 'unbeatable') {
-            const actualBoard = gameBoard.returnBoard();
-            const actualPlayers = gameController.state.getPlayers();
-            const actualTurn = gameController.state.getActualTurn();
-            const indexToPlay = minimax(actualBoard, actualPlayers, actualTurn, 0);
-            gameBoard.simulateBoardClick(indexToPlay.index);
-        } */
         const actualBoard = gameBoard.returnBoard();
         const actualPlayers = gameController.state.getPlayers();
         const actualTurn = gameController.state.getActualTurn();
         const indexToPlay = minimax(actualBoard, actualPlayers, actualTurn, 0);
-        gameBoard.simulateBoardClick(indexToPlay.index);
+        if (state.getIADifficult() == 'easy') {
+            // Make random move to prevent being repetitive with minimax
+            const emptyCell = gameBoard.getPossibleMoves();
+            const randomIndex = Math.floor(Math.random() * emptyCell.length);
+            gameBoard.simulateBoardClick(emptyCell[randomIndex]);
+        } else {
+            gameBoard.simulateBoardClick(indexToPlay.index);
+        }
     }
 
     function minimax(board, players, turn, depth) {
@@ -288,6 +330,10 @@ const gameController = (function () {
         );
 
         if (winner) {
+            const winningCombination = POSSIBLE_WINNING_COMBINATIONS.filter(combination =>
+                combination.every(index => playerCells.includes(index))
+            );
+            gameBoard.highlightCells(winningCombination);
             state.getPlayerInTurn().addVictory()
             displayResult(`${state.getPlayerInTurn().getName()} wins!!`);
         } else if (fullBoard) {
@@ -316,16 +362,11 @@ const gameController = (function () {
 
     // Initialization of state
     function startGame() {
-        const gameMode = document.querySelector('#gameMode>ul>li input:checked');
-        const versusIA = gameMode.value === 'player' ? false : true;// Read if the second player is computer; if so, change default name
+        const versusIA = state.isIAEnabled();// Read if the second player is computer; if so, change default name
         const player1 = player1Name.value ? player1Name.value : 'Player 1';
         const player2 = player2Name.value ? player2Name.value : versusIA ? 'Computer' : 'Player 2';
         const tempPlayers = [Player(player1, 'X'), Player(player2, 'O')];
         state.setPlayers(tempPlayers);
-        if (versusIA) {
-            state.setIAStatus(true);
-            state.setIADifficult(gameDifficult.value);
-        }
         initialSetup.classList.add('hide');
         displayNames();
         displayStats();
@@ -336,6 +377,8 @@ const gameController = (function () {
         const player = state.getPlayers();
         displayP1Name.textContent = player[0].getName();
         displayP2Name.textContent = player[1].getName();
+        p1Mark.textContent = player[0].getMark();
+        p2Mark.textContent = player[1].getMark();
     }
 
     // Display stats of current players

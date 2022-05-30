@@ -12,38 +12,50 @@
     </header>    
     <div class="initial" id="initialSetup">
       <form class="form">
-        <fieldset id="gameMode">
+        <fieldset class="form-field" id="gameMode">
           <legend class="title">Select game mode:</legend>
           <ul>
             <li>
-              <label for="pvp">P vs. P</label>
               <input type="radio" id="pvp" name="mode" value="player" checked>
+              <label for="pvp">P vs. P</label>
             </li>
             <li>
-              <label for="pvc">P vs. C</label>
               <input type="radio" id="pvc" name="mode" value="computer">
+              <label for="pvc">P vs. C</label>
             </li>
           </ul>
         </fieldset>
-        <fieldset>
+        <fieldset class="form-field hide" id="AIDifficult">
           <legend class="title">Select Difficult:</legend>
-          <select name="difficult" id="setDifficult">
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
-            <option value="unbeatable">Unbeatable</option>
-          </select>
+          <ul>
+            <li>
+              <input type="radio" id="difficult1" name="difficult" value="easy" checked>
+              <label for="difficult1">Easy</label>
+            </li>
+            <li>
+              <input type="radio" id="difficult2" name="difficult" value="medium">
+              <label for="difficult2">Medium</label>
+            </li>
+            <li>
+              <input type="radio" id="difficult3" name="difficult" value="hard">
+              <label for="difficult3">Hard</label>
+            </li>
+            <li>
+              <input type="radio" id="difficult4" name="difficult" value="unbeatable">
+              <label for="difficult4">Unbeatable</label>
+            </li>
+          </ul>
         </fieldset>
-        <fieldset>
+        <fieldset class="form-field">
           <legend class="title">Input your name:</legend>
           <div class="name-inputs">
-            <label for="player1">
-              Player 1 name: 
-              <input type="text" id="p1InputName" name="player1">
+            <label for="p1InputName" class="input-container">
+              <input type="text" id="p1InputName" name="player1" placeholder="phantom placeholder" autocomplete="off">
+              <span>Player 1</span>
             </label> 
-            <label for="player1">
-              Player 2 name: 
-              <input type="text" id="p2InputName" name="player2">
+            <label for="p2InputName" class="input-container">
+              <input type="text" id="p2InputName" name="player2" placeholder="phantom placeholder" autocomplete="off">
+              <span id="p2Label">Player 2</span>
             </label>        
           </div>
         </fieldset>
