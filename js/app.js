@@ -133,12 +133,16 @@ const gameController = (function () {
     const gameSelection = gameMode.querySelectorAll('li input[type="radio"]');
     const AIDifficult = document.querySelector('#AIDifficult');
     const difficultOptions = AIDifficult.querySelectorAll('li input[type="radio"]');
+    const selectDifficult = document.querySelector('#selectDifficult');
+    const menuButton = document.querySelector('#menuButton');
 
+    // Event listeners
     for (let radio of gameSelection) radio.addEventListener('click', displayDifficultSelection);
     for (let radio of difficultOptions) radio.addEventListener('click', saveDifficult);
-    // Add event to reset button
+    selectDifficult.addEventListener('click', changeGame);
     resetButton.addEventListener('click', resetGame);
     playButton.addEventListener('click', startGame);
+    menuButton.addEventListener('click', showMenu);
 
     // Internal state for controller
     const state = (function () {
@@ -222,6 +226,7 @@ const gameController = (function () {
     function saveDifficult() {
         const difficult = AIDifficult.querySelector('ul>li input:checked');
         state.setIADifficult(difficult.value);
+        selectDifficult.value = difficult.value;
     }
 
     function computerTurn() {
@@ -367,9 +372,24 @@ const gameController = (function () {
         const player2 = player2Name.value ? player2Name.value : versusIA ? 'Computer' : 'Player 2';
         const tempPlayers = [Player(player1, 'X'), Player(player2, 'O')];
         state.setPlayers(tempPlayers);
+        resetGame();
         initialSetup.classList.add('hide');
+        if (versusIA) {
+            selectDifficult.classList.remove('hide')
+        } else {
+            selectDifficult.classList.add('hide');
+        }
         displayNames();
         displayStats();
+    }
+
+    function changeGame() {
+        state.setIADifficult(selectDifficult.value);
+        resetGame();
+    }
+
+    function showMenu() {
+        initialSetup.classList.remove('hide');
     }
 
     // Display names of current players

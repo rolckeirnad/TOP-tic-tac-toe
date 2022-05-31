@@ -17,6 +17,40 @@ body {
     background-color: #ff7062;
 }
 
+header {
+    display: flex;
+    align-items: center;
+    gap: 100px;
+}
+
+header h1 {
+    position: relative;
+    z-index: 3;
+}
+
+#selectDifficult.hide {
+    visibility: hidden;
+}
+
+#selectDifficult {
+    outline: none;
+    border: none;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    position: relative;
+}
+
+#selectDifficult:focus {
+    outline: none;
+}
+
+#selectDifficult option {
+    border: none;
+}
+
 main {
     margin: 10px 0;
     width: 100vw;
@@ -243,7 +277,8 @@ input[type="text"]:not(:placeholder-shown)+span {
 }
 
 #restartButton,
-#playButton {
+#playButton,
+#menuButton {
     border: none;
     border-radius: 10px;
     background-color: #12355b;
