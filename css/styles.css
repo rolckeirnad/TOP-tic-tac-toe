@@ -100,6 +100,14 @@ main {
     box-shadow: inset 0px 0px 20px 10px #c779d0, 0px 0px 20px 0px #c779d0;
 }
 
+.preview-X {
+    color: #ffd23f; 
+}
+
+.preview-O {
+    color: #c779d0;
+}
+
 .player-info-container {
     align-self: start;
     padding: 5px 0 15px;

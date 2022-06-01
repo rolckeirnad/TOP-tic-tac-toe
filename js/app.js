@@ -10,6 +10,8 @@ const gameBoard = (function () {
         for (let cell of cells) {
             const index = [...cells].indexOf(cell);
             cell.addEventListener('click', _ => addMarker(index));
+            cell.addEventListener('mouseenter', _ => onEnterCell(index));
+            cell.addEventListener('mouseleave', _ => onLeaveCell(index));
         }
     })();
 
@@ -23,6 +25,7 @@ const gameBoard = (function () {
             cells[index].textContent = mark; // Show mark in pressed cell
             cells[index].classList.add(mark);
             cells[index].classList.add('highlight');
+            cells[index].classList.remove(`preview-${mark}`);
             gameController.endTurn(index); // Finish player turn
         }
     }
@@ -32,6 +35,24 @@ const gameBoard = (function () {
         removeHighlight();
         for (let cell of cellArray) {
             cells[cell].classList.add('highlight');
+        }
+    }
+
+    function onEnterCell(index) {
+        const isCellEmpty = !board[index];
+        if (isCellEmpty) {
+            const previewMark = gameController.state.getPlayerInTurn().getMark();
+            cells[index].textContent = previewMark
+            cells[index].classList.add(`preview-${previewMark}`);
+        }
+    }
+
+    function onLeaveCell(index) {
+        const isCellEmpty = !board[index];
+        const previewMark = gameController.state.getPlayerInTurn().getMark();
+        cells[index].classList.remove(`preview-${previewMark}`);
+        if (isCellEmpty) {
+            cells[index].textContent = '';
         }
     }
 
@@ -50,7 +71,9 @@ const gameBoard = (function () {
             cell.textContent = '';
             cell.classList.remove('X');
             cell.classList.remove('O');
-            cell.classList.remove('highlight')
+            cell.classList.remove('highlight');
+            cell.classList.remove('preview-X');
+            cell.classList.remove('preview-O');
         }
     }
 
